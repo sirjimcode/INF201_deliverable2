@@ -36,3 +36,12 @@ def remove_price_outliers(price_data) -> np.ndarray:
     cleaned_prices[outlier_mask] = valid_median
 
     return cleaned_prices
+
+
+def compute_refund_ratio(sales_count: np.ndarray, refund_count: np.ndarray) -> np.ndarray:
+    """
+    Beregner forholdet mellom refusjoner og salg. For å unngå deling på null, legger vi til en liten epsilon-verdi.
+    Returnerer en NumPy array med forholdet.
+    """
+    epsilon = 1e-6
+    return refund_count / (sales_count + epsilon)
