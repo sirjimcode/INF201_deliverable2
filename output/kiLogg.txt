@@ -1,0 +1,45 @@
+Oppsummering av GenAI-bruk (Claude) – Deliverable 2, INF201
+
+Vi brukte Claude som veileder gjennom oppgaven. Vi delte oppgaveteksten først og ba om at den ikke skulle løse oppgaven, bare svare på spørsmål underveis. Claude bekreftet hvordan formlene i PDF-en skulle leses (outlier: |x − μ| > 3σ, refund ratio = refund / (sales + 10⁻⁶), NOK-priser × 10).
+
+Oppgave 1 – Filinnlesing og regex
+Spørsmål: Hva er fordelen med en tuple?
+Svar: En tuple er uforanderlig og passer når en funksjon returnerer flere verdier som hører sammen, som (tekst, encoding). Den kan pakkes ut direkte, og posisjonen har fast betydning. Lister passer bedre for mange elementer av samme type.
+Spørsmål: Vi vil prøve UTF-8 først og bruke Latin-1 hvis det feiler. Feiler UTF-8 faktisk hvis filen har feil format?
+Svar: Ja, UTF-8 kaster UnicodeDecodeError på Latin-1-tegn som æ, ø, å og é. Latin-1 feiler derimot aldri, fordi alle byte-verdier er gyldige, så rekkefølgen UTF-8 først er den eneste som fungerer. Rene ASCII-filer leses riktig med UTF-8. Man bør fange den spesifikke UnicodeDecodeError, ikke et generelt except.
+Spørsmål: Hvorfor er re-modulen lur for å skille data fra støy?
+Svar: Regex beskriver hvordan en gyldig linje ser ut, og gjør både filtrering (linjer som ikke matcher gir None) og uthenting (grupper, gjerne navngitte med groupdict()). Det er mer robust enn split(), og kan validere formatet samtidig. Tips: escape [ ] og ( ), og konverter prisen til float.
+Spørsmål: Hva hvis en linje mangler noe av informasjonen?
+Svar: Krever mønsteret alle feltene, matcher ikke linjen og hoppes over, som er ønsket oppførsel. Valgfrie grupper gir None-verdier og problemer senere. Lurt å telle overhoppede linjer, og å bruke re.match fremfor re.search for å være strengere.
+Spørsmål: Kan alle verdiene være strenger?
+Svar: Alle unntatt price, som må være float fordi den skal brukes i beregninger. Timestamp forblir streng til oppgave 4.
+Oppgave 2 – Rekursjon
+Spørsmål: Starter hvert rekursive kall med en tom liste, og legges alt sammen til slutt?
+Svar: Ja, hvert kall har sin egen lokale liste som fylles med filene på sitt nivå pluss det som returneres fra undermappene, og sendes ett nivå opp av gangen. Claude forklarte med et eksempel på en mappestruktur, anbefalte extend fremfor append, og advarte mot liste som standardargument.
+Spørsmål: Legges listene sammen fordi de har samme navn?
+Svar: Nei, variablene i hvert kall er helt separate. De samles fordi return sender lista opp og extend tar imot den i kallet over. Uten extend forsvinner resultatet. Forskjellen mellom kall og iterasjon ble også forklart.
+Vår kode for 2.1 ble gjennomgått og var riktig. Forslag: nevne rekursjon i docstring, legge til type hints, og eventuelt sorted() for forutsigbar rekkefølge.
+2.2: Vi slet med oppgaven. Claude forklarte at funksjonen må håndtere tre tilfeller (dict, liste, alt annet) uten å kjenne strukturen i filen, og ga hint om isinstance, .values(), .get() og .update().
+Spørsmål: Hvorfor et sett i stedet for en liste?
+Svar: Ingen duplikater, raske oppslag med in (nyttig når transaksjoner skal sjekkes mot aktive kasser), rekkefølge er uviktig, og oppgaven krever set[str].
+Spørsmål: Sjekker man først dict, så liste, og så er det ingenting?
+Svar: Hvert kall sjekker typen til det det får inn og går inn i ett av tre spor. Claude gikk gjennom eksempelet fra oppgaveteksten steg for steg.
+Vår kode for 2.2 ble gjennomgått og fungerte. Vi spurte om den heller burde ta imot en filsti. Claude forklarte at den rekursive funksjonen må ta imot data, og foreslo en egen innpakningsfunksjon. Vi valgte å lese filen i workflowen i oppgave 5 i stedet.
+Oppgave 3 – NumPy
+Spørsmål: Er fordelen med NumPy at man kan gjøre operasjoner på en hel kolonne?
+Svar: Ja, vektorisering. Det er raskere fordi løkken kjører i C, alle elementer har samme type, og data ligger tett i minnet.
+Spørsmål: Hva er en boolsk maske?
+Svar: Et array av True/False som kan brukes til å velge ut elementer, snus med ~, og brukes til å endre bare noen elementer.
+3.1: Vi ba om et kodeforslag. Claude ga et forslag til remove_price_outliers, og påpekte at 3σ-regelen ikke kan oppdage outliers med færre enn 11 datapunkter, så testdataen må være stor nok. Vi skrev vår egen versjon basert på forslaget, med ekstra håndtering av tomt array. Claude bekreftet at den var riktig og foreslo å vurdere NaN-verdier, ugyldig input og små datasett, men anbefalte heller å nevne begrensningene i diskusjonen enn å kode rundt alle.
+3.2: Claude skrev compute_refund_ratio på vår forespørsel (se oppgave 4.4).
+Oppgave 4 – Pandas
+4.1, spørsmål: Er det riktig å gjøre timestamp til indeks og sortere?
+Svar: Ja, men timestamp må først konverteres med pd.to_datetime, ellers fungerer ikke resample i 4.2. Husk å lagre resultatet av set_index og sort_index. Vår kode ble gjennomgått og var riktig. Forslag: håndtere tom liste, oppgi format=, utvide docstring.
+4.2, spørsmål: Skal vi sortere etter item og deretter time, og summere innen samme time?
+Svar: Ja, men det heter gruppering. Claude ga hint om å kjede groupby, kolonneutvalg, resample("1h") og sum(), og nevnte at tomme timer får 0 og at resultatet har to-nivå-indeks.
+4.3, spørsmål: Må denne kobles til oppgave 3?
+Svar: Nei, det er 4.4. Claude forklarte hva en pivottabell er og hvilke parametere pivot_table tar. Fordelen er at data fordeles på to akser i stedet for én. Claude ga kode for pivottabellen med index, columns, values, aggfunc og fill_value, pluss reindex for å sikre at alle tre statuser er med i fast rekkefølge.
+4.4: Claude forklarte at man må telle (ikke summere) SUCCESS og REFUND per item, f.eks. med pd.crosstab, hente ut kolonnene som NumPy-arrays, og koble resultatet tilbake til item-navnene. Vi bør skrive hvilken tolkning av “sales count” vi valgte. Claude ga kode for både compute_refund_ratio og en eksempelfunksjon for 4.4. Vi skrev vår egen versjon med if/else-sjekker for manglende kolonner som returnerer en Series. Claude bekreftet at den var riktig.
+Oppgave 5 – Workflow
+Spørsmål: Hvordan går vi frem?
+Svar: Claude ga en plan som koblet hvert av de sju stegene til våre funksjoner, foreslo å filtrere på aktive kasser med isin, forklarte hvorfor outlier-rensing må skje før valutakorrigering, og at timesrapporten må gjøres om til en nøstet dict før lagring som JSON.

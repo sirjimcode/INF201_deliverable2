@@ -48,6 +48,6 @@ def find_active_registers(data) -> set[str]:
             active_ids.update(find_active_registers(item))
 
     # Tilfelle 3 (Base case): primitive typer som int, str, bool
-    # Gjør ingenting, returnerer bare det oppsamlede settet (eller et tomt sett)
+    # Gjør ingenting, dermed returnerer den bare det oppsamlede settet (eller et tomt sett)
 
     return active_ids

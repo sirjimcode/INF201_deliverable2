@@ -59,14 +59,14 @@ def calculate_item_refund_ratio(df: pd.DataFrame) -> pd.Series:
     else:
         sales_count = np.zeros(len(counts))
 
-    # 3. Hent ut antall refusjoner REFUND som et NumPy-array
+    # 3. Henter ut antall refusjoner REFUND som et NumPy-array
     if "REFUND" in counts.columns:
         refund_count = counts["REFUND"].to_numpy()
     else:
         refund_count = np.zeros(len(counts))
 
-    # 4. Kall funksjonen fra Task 3
+    # 4. Kaller funksjonen fra Task 3
     ratios = compute_refund_ratio(sales_count, refund_count)
 
-    # 5. Returner som en Pandas Series koblet til varenavnene
+    # 5. Returnerer som en Pandas Series koblet til varenavnene
     return pd.Series(ratios, index=counts.index, name="refund_ratio")
