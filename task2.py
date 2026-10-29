@@ -43,7 +43,7 @@ def find_active_registers(data) -> set[str]:
 
     # Tilfelle 2: Vi står i en liste
     elif isinstance(data, list):
-        # Traverser hvert element i listen rekursivt
+        # Traverserer hvert element i listen rekursivt
         for item in data:
             active_ids.update(find_active_registers(item))
 
